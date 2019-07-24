@@ -4,14 +4,23 @@ require 'securerandom'
 RSpec.describe ShortenedUrlsController, type: :controller do
   describe "GET #index" do
     it "returns the top 100" do
-      shortened_url = ShortenedUrl.create!(
-        slug: SecureRandom.hex,
-        original_url: SecureRandom.hex,
-        hit_count: i
-      )
+      saved_urls = []
+      for i in 1..100 do
+        saved_urls.push(ShortenedUrl.create!(
+          slug: SecureRandom.hex,
+          original_url: SecureRandom.hex,
+          hit_count: i
+        ))
+      end
 
       get :index
       expect(response).to be_successful
+      top_100 = JSON.parse(response.body)
+
+      expect(top_100.first["hit_count"]).to eq(100)
+      expect(top_100.last["hit_count"]).to eq(1)
+      expect(top_100.first["id"]).to eq(saved_urls.last.id)
+      expect(top_100.last["id"]).to eq(saved_urls.first.id)
     end
   end
 
@@ -25,11 +34,10 @@ RSpec.describe ShortenedUrlsController, type: :controller do
         slug: random_slug)
 
       get :show, params: {id: shortened_url.slug}
-      expect(response).to be_successful
       expect(response).to redirect_to("http://google.com")
 
       shortened_url.reload
-      expect(shortened_url.hit_count).to eq(initial_hit_count + 1)
+      expect(shortened_url.hit_count).to eq(random_hit_count + 1)
     end
 
     it "returns an error when the slug is invalid" do
@@ -42,13 +50,13 @@ RSpec.describe ShortenedUrlsController, type: :controller do
       random_hit_count = rand(1..20)
       random_slug = SecureRandom.hex
       shortened_url = ShortenedUrl.create!(
-        original_url: "http://google.com",
+        original_url: "not a url",
         hit_count: random_hit_count,
         slug: random_slug)
 
-      expect(response).to have_http_status(:bad_request)
+      get :show, params: {id: shortened_url.slug}
       shortened_url.reload
-      expect(shortened_url.hit_count).to eq(initial_hit_count + 1)
+      expect(shortened_url.hit_count).to eq(random_hit_count + 1)
     end
   end
 
@@ -63,9 +71,14 @@ RSpec.describe ShortenedUrlsController, type: :controller do
     end
 
     context "with invalid params" do
-      it "renders a JSON response with errors for the new shortened_url" do
+      it "returns an error if no params given" do
+        post :create, params: {}
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.content_type).to eq('application/json')
+      end
 
-        post :create, params: {shortened_url: invalid_attributes}
+      it "does not allow a user to set its own slug" do
+        post :create, params: {shortened_url: {slug: "12932"}}
         expect(response).to have_http_status(:unprocessable_entity)
         expect(response.content_type).to eq('application/json')
       end
