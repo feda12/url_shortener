@@ -76,9 +76,11 @@ RSpec.describe ShortenedUrlsController, type: :controller do
 
       it "returns the shortened url with the host" do
         post :create, params: {url: "http://google.com"}
-        shortened_url_json = JSON.parse(response.body)
 
-        expect(shortened_url_json["url"]).to eq("http://localhost:3000/slug")
+        shortened_url_json = JSON.parse(response.body)
+        shortened_url = ShortenedUrl.all.first
+
+        expect(shortened_url_json["url"]).to eq("http://test.host/#{shortened_url.slug}")
       end
     end
 
