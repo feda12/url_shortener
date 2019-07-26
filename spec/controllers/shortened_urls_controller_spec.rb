@@ -68,6 +68,12 @@ RSpec.describe ShortenedUrlsController, type: :controller do
         expect(response.content_type).to eq('application/json')
         expect(response.location).to eq(shortened_url_url(ShortenedUrl.last))
       end
+
+      it "kicks up a background job to fetch title" do
+        expect {
+          post :create, params: {shortened_url: {original_url: "http://google.com"}}
+        }.to have_enqueued_job(UrlMetadataFetcherJob)
+      end
     end
 
     context "with invalid params" do
