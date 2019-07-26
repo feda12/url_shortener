@@ -33,7 +33,7 @@ RSpec.describe ShortenedUrlsController, type: :controller do
         hit_count: random_hit_count,
         slug: random_slug)
 
-      get :show, params: {id: shortened_url.slug}
+      get :show, params: {slug: shortened_url.slug}
       expect(response).to redirect_to("http://google.com")
 
       shortened_url.reload
@@ -42,7 +42,7 @@ RSpec.describe ShortenedUrlsController, type: :controller do
 
     it "returns an error when the slug is invalid" do
       random_slug = SecureRandom.hex
-      get :show, params: {id: random_slug}
+      get :show, params: {slug: random_slug}
       expect(response).to have_http_status(:bad_request)
     end
 
@@ -54,7 +54,7 @@ RSpec.describe ShortenedUrlsController, type: :controller do
         hit_count: random_hit_count,
         slug: random_slug)
 
-      get :show, params: {id: shortened_url.slug}
+      get :show, params: {slug: shortened_url.slug}
       shortened_url.reload
       expect(shortened_url.hit_count).to eq(random_hit_count + 1)
     end
@@ -63,7 +63,7 @@ RSpec.describe ShortenedUrlsController, type: :controller do
   describe "POST #create" do
     context "with valid params" do
       it "renders a JSON response with the new shortened_url" do
-        post :create, params: {shortened_url: {original_url: "http://google.com"}}
+        post :create, params: {url: "http://google.com"}
         expect(response).to have_http_status(:created)
         expect(response.content_type).to eq('application/json')
         expect(response.location).to eq(shortened_url_url(ShortenedUrl.last))
@@ -71,19 +71,26 @@ RSpec.describe ShortenedUrlsController, type: :controller do
 
       it "kicks up a background job to fetch title" do
         expect(UrlMetadataFetcherJob).to receive(:perform_later).once
-        post :create, params: {shortened_url: {original_url: "http://google.com"}}
+        post :create, params: {url: "http://google.com"}
+      end
+
+      it "returns the shortened url with the host" do
+        post :create, params: {url: "http://google.com"}
+        shortened_url_json = JSON.parse(response.body)
+
+        expect(shortened_url_json["url"]).to eq("http://localhost:3000/slug")
       end
     end
 
     context "with invalid params" do
       it "returns an error if no params given" do
-        post :create, params: {shortened_url: {}}
+        post :create, params: {}
         expect(response).to have_http_status(:unprocessable_entity)
         expect(response.content_type).to eq('application/json')
       end
 
       it "does not allow a user to set its own slug" do
-        post :create, params: {shortened_url: {slug: "12932"}}
+        post :create, params: {slug: "12932"}
         expect(response).to have_http_status(:unprocessable_entity)
         expect(response.content_type).to eq('application/json')
       end

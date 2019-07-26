@@ -7,7 +7,7 @@ RSpec.describe ShortenedUrlsController, type: :routing do
     end
 
     it "routes to #show" do
-      expect(:get => "/slug").to route_to("shortened_urls#show", :id => "slug")
+      expect(:get => "/slug").to route_to("shortened_urls#show", :slug => "slug")
     end
 
 

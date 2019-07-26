@@ -35,11 +35,11 @@ class ShortenedUrlsController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_shortened_url
-      @shortened_url = ShortenedUrl.find_by(slug: params[:id])
+      @shortened_url = ShortenedUrl.find_by(slug: params[:slug])
     end
 
     # Only allow a trusted parameter "white list" through.
     def shortened_url_params
-      params.require(:shortened_url).permit(:original_url)
+      params.permit(:url)
     end
 end
