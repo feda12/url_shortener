@@ -23,10 +23,7 @@ class ShortenedUrlsController < ApplicationController
 
   # POST /shortened_urls
   def create
-    new_slug = SecureRandom.hex(10)
     @shortened_url = ShortenedUrl.new(shortened_url_params)
-    @shortened_url.slug = new_slug
-
     if @shortened_url.save
       UrlMetadataFetcherJob.perform_later(@shortened_url)
       render json: @shortened_url, status: :created, location: @shortened_url
