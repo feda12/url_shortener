@@ -28,6 +28,7 @@ class ShortenedUrlsController < ApplicationController
     @shortened_url.slug = new_slug
 
     if @shortened_url.save
+      UrlMetadataFetcherJob.perform_later(@shortened_url)
       render json: @shortened_url, status: :created, location: @shortened_url
     else
       render json: @shortened_url.errors, status: :unprocessable_entity

@@ -77,7 +77,7 @@ RSpec.describe ShortenedUrlsController, type: :controller do
 
     context "with invalid params" do
       it "returns an error if no params given" do
-        post :create, params: {}
+        post :create, params: {shortened_url: {}}
         expect(response).to have_http_status(:unprocessable_entity)
         expect(response.content_type).to eq('application/json')
       end
