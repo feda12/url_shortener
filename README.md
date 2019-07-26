@@ -33,7 +33,6 @@ Build a web service that allow users to submit a URL and return a “shortened U
 - I can create a new shortened URL
 - I get redirected to the URL submitted when I hit the shortened_url
 - I can get a list of top 100 most used shortened url
-- 
 
 ## Architecture
 - Has a POST endpoint to submit a URL for shortening
@@ -55,8 +54,8 @@ Build a web service that allow users to submit a URL and return a “shortened U
   - popular is defined as how many times the shortened URL was used to reach the original URL
   - duplicate original URL are allowed
 
-- title
-  - we only one 
+- Title
+  - we only want the title after initialization
 
 ## Security
 
@@ -66,23 +65,12 @@ This API has no security built-in such as authentication. We would rely on Herok
 
 - Our top 100 endpoint is doing a query to get the top 100 urls by hit count. This will be quite inefficient as usage grow. An alternative would be a materialized view that runs the "get me the top 100 by hit count" and update itself everytime a hit count change. If this view becomes a burden on the db, we can make it hourly or daily.
 
+- Our top 100 would probably be more relevant to a user if the original URL is unique, however this would add complexity in our counting methodology.
+
+- Our create endpoint will eventually return errors when `SecureRandom.hex(5)` returns a slug already used. The user would then have to re-submit its URL. In order to prevent this from happening, our architecture would need to scale up. One way would be to have a worker generate slugs, check that they aren't in used and put them in a queue(Redis, S3 etc) to be ready to be used. We can limit our queue to have X number of slugs ready so that we don't end up creating billions of unique slugs.
+
 - Our title fetcher background worker will not retry to grab the title if it's nil, nor will it be able to update the title to reflect the latest title. A solution to this issue would be to run the job at frequent interval; we would store a datetime on the `shortened_url` indicating when its title was last fetched and look for urls that haven't been updated in X days.
 
 - Add the favicon to the url shortener.
 - Use UUID instead of integer for primary keys
-
-
-
-Nokigiri for HTML
-No job backend but something that should be added for a production app
-Use SecureRandom.hex(5) to generate our unique slugs
-We have about 36^5 available names, thus over 60 million
-Improvement for future versions:
-- Have a background worker generates a “stack” of slugs and take whatever is on top
-- This would grow with usage
-- 
-Improvement: background job that runs daily and fetches title for urls that haven’t been updated in 7 days
-background job that runs daily for title missing?
-background job that removes urls that haven’t been hit in X months
-background job that removes urls that haven’t been able to be reached in X months
 
