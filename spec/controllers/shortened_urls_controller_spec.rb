@@ -70,9 +70,8 @@ RSpec.describe ShortenedUrlsController, type: :controller do
       end
 
       it "kicks up a background job to fetch title" do
-        expect {
-          post :create, params: {shortened_url: {original_url: "http://google.com"}}
-        }.to have_enqueued_job(UrlMetadataFetcherJob)
+        expect(UrlMetadataFetcherJob).to receive(:perform_later).once
+        post :create, params: {shortened_url: {original_url: "http://google.com"}}
       end
     end
 
