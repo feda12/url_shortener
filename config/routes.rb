@@ -1,4 +1,3 @@
 Rails.application.routes.draw do
-  resources :shortened_urls
-  # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
+  resources :shortened_urls, path: "/", only: [:index, :show, :create]
 end
