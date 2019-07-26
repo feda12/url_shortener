@@ -21,8 +21,58 @@ docker-compose up
 
 Option `-d` is optional and would run the app in daemon mode.
 
-
 To run the specs, use the command: `docker-compose run web rspec`
+
+## Usage
+
+### Shorten a URL
+
+Request
+
+```
+curl -X POST -H "Content-Type: application/json" -d '{
+  "url": "http://google.com"
+  }' "http://localhost:3000/"
+```
+
+Response
+
+```
+{
+  "url": "http://localhost:3000/bdf3da24a9"
+}
+```
+
+### Top 100
+
+Request
+
+```
+curl -X GET "http://localhost:3000/"
+```
+
+Response
+
+```
+[
+  {
+    "url": "http://localhost:3000/5831a89efd",
+    "original_url": "http://google.com",
+    "hit_count": 1,
+    "id": 1
+  },
+  {
+    "url": "http://localhost:3000/abc0bb1e76",
+    "original_url": "http://google.com",
+    "hit_count": 0,
+    "id": 34
+  }
+]
+```
+
+### Use shortened URL
+
+To test the shortened URL, copy the URL from the creation step and paste it in a browser.
 
 ## Goal
 
