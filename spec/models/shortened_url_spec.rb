@@ -3,13 +3,13 @@ require 'rails_helper'
 RSpec.describe ShortenedUrl, type: :model do
   describe "validations" do
     it "requires an original url" do
-      url = ShortenedUrl.new
+      url = ShortenedUrl.create
       expect(url.valid?).to be_falsey
       expect(url.errors[:original_url]).to eq(["can't be blank"])
     end
 
     it "passes validation with an original url" do
-      url = ShortenedUrl.new(original_url: "http://google.com")
+      url = ShortenedUrl.create(original_url: "http://google.com")
       expect(url.valid?).to be_truthy
     end
   end

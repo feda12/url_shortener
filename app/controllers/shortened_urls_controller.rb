@@ -12,7 +12,7 @@ class ShortenedUrlsController < ApplicationController
       request: request
   end
 
-  # GET /shortened_urls/1
+  # GET /shortened_urls/abde43
   def show
     if @shortened_url
       @shortened_url.hit_count += 1
